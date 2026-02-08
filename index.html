@@ -2,8 +2,9 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>UT Anonymous | System Protocol</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UT Anonymous | System Protocol Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         :root {
             --red: #ff0000;
@@ -17,61 +18,90 @@
             overflow: hidden; height: 100vh; width: 100vw;
         }
 
-        /* 1. Overlay Klik Utama */
+        /* Blitz Effect Overlay */
+        #blitz-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #fff; z-index: 10000; opacity: 0; pointer-events: none;
+        }
+
+        /* Start Button Screen */
         #start-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex;
             align-items: center; justify-content: center; cursor: pointer;
         }
-
-        #start-screen h2 {
-            border: 1px solid var(--white); padding: 15px 30px;
-            letter-spacing: 3px; font-weight: 400; transition: 0.3s;
+        #start-screen h2 { 
+            border: 1px solid var(--white); padding: 20px 40px; 
+            letter-spacing: 5px; font-weight: 400; transition: 0.5s; 
         }
-
         #start-screen h2:hover { background: var(--white); color: #000; }
 
-        /* Background Matrix */
+        /* Matrix Background */
         canvas { position: fixed; top: 0; left: 0; z-index: 1; opacity: 0.4; }
 
-        /* 2. Container Loading (Berdiri Sendiri) */
+        /* Screen 1: Loading (Massive) */
         #loading-screen {
             position: relative; z-index: 100;
             display: none; flex-direction: column; align-items: center;
             justify-content: center; height: 100vh;
         }
+        .progress-box { width: 75%; max-width: 1100px; height: 8px; background: rgba(255,255,255,0.1); border-radius: 20px; }
+        #fill { width: 0%; height: 100%; background: var(--red); box-shadow: 0 0 40px var(--red); }
+        #status { 
+            margin-top: 50px; font-size: 5rem; font-weight: 900; 
+            letter-spacing: 15px; color: var(--red); text-transform: uppercase; 
+            text-align: center; text-shadow: 0 0 20px rgba(255,0,0,0.5);
+        }
 
-        .progress-box { width: 400px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
-        #fill { width: 0%; height: 100%; background: var(--red); box-shadow: 0 0 10px var(--red); }
-        #status { margin-top: 15px; font-family: 'JetBrains Mono'; font-size: 0.8rem; letter-spacing: 2px; color: var(--red); }
-
-        /* 3. Container Pesan Utama (Muncul Setelah Loading) */
+        /* Screen 2: Narrative */
         #message-screen {
             position: relative; z-index: 100;
             display: none; flex-direction: column; align-items: center;
-            justify-content: center; height: 100vh; text-align: center;
-            padding: 0 10%;
+            justify-content: center; height: 100vh; text-align: center; padding: 0 10%;
         }
+        .giant-text { font-size: 4rem; font-weight: 900; margin-bottom: 30px; line-height: 1.1; color: var(--white); }
+        .sub-text { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 1.5rem; margin: 12px 0; }
 
-        #ut-anonymous { font-size: 5rem; font-weight: 900; color: var(--red); margin: 0; letter-spacing: -2px; }
-        .giant-text { font-size: 3.5rem; font-weight: 900; margin: 20px 0; line-height: 1.1; }
-        .sub-text { font-family: 'JetBrains Mono'; color: var(--green); font-size: 1.2rem; margin: 5px 0; }
+        /* Screen 3: Outro (UT Anonymous) */
+        #outro-screen {
+            position: relative; z-index: 100;
+            display: none; flex-direction: column; align-items: center;
+            justify-content: center; height: 100vh;
+        }
+        #outro-text { font-size: 7rem; font-weight: 900; color: var(--red); letter-spacing: -3px; text-shadow: 0 0 40px var(--red); }
+        .char { opacity: 0; transition: opacity 1.2s ease-in-out; display: inline-block; }
+        .fade-in { opacity: 1; }
+
+        /* Blitz Animation Class */
+        .blitz-active { animation: blitz-anim 1.8s ease-out forwards; }
+        @keyframes blitz-anim {
+            0% { opacity: 0; }
+            15% { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
 
-<div id="start-screen"><h2>START SYSTEM</h2></div>
+<div id="blitz-overlay"></div>
+
+<div id="start-screen">
+    <h2>INITIALIZE PROTOCOL</h2>
+</div>
 
 <canvas id="matrix"></canvas>
 
 <div id="loading-screen">
     <div class="progress-box"><div id="fill"></div></div>
-    <div id="status">INITIALIZING SYSTEM BYPASS... 0%</div>
+    <div id="status">INITIALIZING... 0%</div>
 </div>
 
 <div id="message-screen">
-    <h1 id="ut-anonymous">UT ANONYMOUS</h1>
     <div id="final-content"></div>
+</div>
+
+<div id="outro-screen">
+    <h1 id="outro-text"></h1>
 </div>
 
 <audio id="ambient" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3"></audio>
@@ -81,62 +111,72 @@
     const startScreen = document.getElementById('start-screen');
     const loadingScreen = document.getElementById('loading-screen');
     const messageScreen = document.getElementById('message-screen');
-    const fill = document.getElementById('fill');
-    const status = document.getElementById('status');
-    const beep = document.getElementById('beep');
+    const outroScreen = document.getElementById('outro-screen');
+    const blitz = document.getElementById('blitz-overlay');
     const ambient = document.getElementById('ambient');
-
-    // Matrix Rain
+    const beep = document.getElementById('beep');
     const canvas = document.getElementById('matrix');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const drops = Array.from({ length: canvas.width/16 }).fill(1);
-    function draw() {
-        ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = '#0F0'; ctx.font = '16px monospace';
-        drops.forEach((y, i) => {
-            ctx.fillText(alphabet[Math.floor(Math.random()*alphabet.length)], i*16, y*16);
-            if(y*16 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-            drops[i]++;
-        });
-    }
-    setInterval(draw, 50);
 
-    // Sequence Logic
+    // Matrix Rain Setup
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ";
+    const fontSize = 18;
+    const columns = canvas.width / fontSize;
+    const drops = Array.from({ length: columns }).fill(1);
+    
+    let matrixInterval;
+    function draw() {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0F0';
+        ctx.font = fontSize + 'px monospace';
+        for (let i = 0; i < drops.length; i++) {
+            const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        }
+    }
+    matrixInterval = setInterval(draw, 50);
+
+    // Sequence Control
     startScreen.onclick = () => {
         startScreen.style.display = 'none';
         loadingScreen.style.display = 'flex';
-        ambient.play();
-        startLoading();
+        ambient.play().catch(() => {});
+        runLoading();
     };
 
-    function startLoading() {
+    function runLoading() {
         let width = 0;
+        let fill = document.getElementById('fill');
+        let status = document.getElementById('status');
         let id = setInterval(() => {
             if (width >= 100) {
                 clearInterval(id);
-                transitionToMessage();
+                setTimeout(showMessages, 1000);
             } else {
-                width += 0.4; // Kecepatan loading
+                width += 0.15; // Loading diperlambat
+                if (width > 100) width = 100;
                 fill.style.width = width + '%';
-                status.innerText = `DECRYPTING QUALITY_PROTOCOL... ${Math.floor(width)}%`;
+                status.innerText = `INITIALIZING... ${Math.floor(width)}%`;
             }
-        }, 30);
+        }, 60);
     }
 
-    function transitionToMessage() {
+    async function showMessages() {
         loadingScreen.style.display = 'none';
         messageScreen.style.display = 'flex';
-        renderText();
-    }
-
-    async function renderText() {
         const target = document.getElementById('final-content');
+        
         const lines = [
-            { t: "BERHENTILAH MENGGUNAKAN SISTEM 'MURAHAN'!", s: "giant-text" },
-            { t: "> KUALITAS SISTEM ADALAH HARGA MATI.", s: "sub-text" },
-            { t: "> JANGAN KORBANKAN INTEGRITAS DEMI ANGGARAN RENDAH.", s: "sub-text" }
+            { t: "STOP MENGGUNAKAN SISTEM MURAHAN!", s: "giant-text" },
+            { t: "> KUALITAS SISTEM BUKANLAH PILIHAN, TAPI HARGA MATI.", s: "sub-text" },
+            { t: "> ANGGARAN RENDAH ADALAH ALASAN UNTUK KEGAGALAN YANG TERENCANA.", s: "sub-text" },
+            { t: "> JANGAN KORBANKAN DATA DAN INTEGRITAS DEMI EFISIENSI SEMU.", s: "sub-text" },
+            { t: "> KAMI TIDAK BUTUH JANJI, KAMI BUTUH INFRASTRUKTUR YANG MUMPUNI.", s: "sub-text" },
+            { t: "> EVALUASI SEKARANG, ATAU BIARKAN SISTEM INI RUNTUH PERLAHAN.", s: "sub-text" }
         ];
 
         for (let line of lines) {
@@ -148,9 +188,50 @@
                 beep.currentTime = 0; beep.play().catch(()=>{});
                 await new Promise(r => setTimeout(r, 40));
             }
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise(r => setTimeout(r, 1400));
         }
+        setTimeout(showOutro, 1000);
     }
+
+    async function showOutro() {
+        messageScreen.style.display = 'none';
+        outroScreen.style.display = 'flex';
+        const textStr = "UT ANONYMOUS";
+        const container = document.getElementById('outro-text');
+        
+        for (let char of textStr) {
+            let span = document.createElement('span');
+            span.innerText = char === " " ? "\u00A0" : char;
+            span.className = 'char';
+            container.appendChild(span);
+        }
+
+        const spans = container.querySelectorAll('.char');
+        for (let span of spans) {
+            span.classList.add('fade-in');
+            beep.currentTime = 0; beep.play().catch(()=>{});
+            await new Promise(r => setTimeout(r, 250));
+        }
+
+        // TRIGGER BLITZ & TOTAL CLEANUP
+        setTimeout(() => {
+            blitz.classList.add('blitz-active');
+            
+            // Saat kilauan putih maksimal
+            setTimeout(() => {
+                clearInterval(matrixInterval);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvas.style.display = 'none';
+                outroScreen.style.display = 'none';
+                ambient.pause();
+            }, 300);
+        }, 2000);
+    }
+
+    window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    });
 </script>
 </body>
 </html>
